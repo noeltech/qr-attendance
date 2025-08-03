@@ -1,0 +1,243 @@
+import { useEffect, useRef, useState } from "react";
+import { Form, useActionData, useFetcher } from "react-router";
+import jsQR from "jsqr";
+import type { ActionFunctionArgs, } from "react-router";
+import type { Route } from "./+types/scan";
+import { validateQrData } from "~/utils/validateQrData";
+import { validateQrCode } from "~/utils/validateQrCode";
+import { findOneUser } from "~/utils/db.server";
+
+
+export async function action({ request }) {
+    const formData = await request.formData();
+    let qrData = formData.get("data")?.toString();
+    console.log("Scan action received QR data:", qrData); // Debug log
+    if (!qrData) {
+        return { error: "No QR code data provided" };
+    }
+    // Validate the Qr data 
+    const qrDataresult = await validateQrData(qrData)
+    if (qrDataresult.error) {
+        return { error: qrDataresult.error }
+    }
+    // Validate the Qr COde
+    const qrCodeResult = await validateQrCode(qrDataresult.data)
+    console.log(qrCodeResult)
+
+    if (qrCodeResult.error) {
+        return { error: qrDataresult.error }
+    }
+    const findResult = await findOneUser(qrCodeResult.userID)
+    if (findResult.error) {
+        return { error: `${findResult.error}` }
+    }
+    console.log(findResult)
+    return { message: 'QR Code successfully validated', attendee: findResult.name }
+}
+
+
+
+
+
+export default function Scan({ actionData }: Route.ComponentProps) {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const fetcher = useFetcher();
+    const [hasWebcam, setHasWebcam] = useState<boolean | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [scannedData, setScannedData] = useState<string | null>(null);
+
+
+
+    // Handle fetcher response for /log-attendance
+    // useEffect(() => {
+    //     console.log("useEffect triggered, fetcher state:", fetcher.state, "fetcher data:", fetcher.data); // Debug log
+    //     if (fetcher.data && fetcher.state === "idle") {
+    //         if (fetcher.data.error) {
+    //             setError(fetcher.data.error);
+    //             console.error("Fetcher error:", fetcher.data.error); // Debug log
+    //         } else if (fetcher.data.qrData) {
+    //             // Submit to /log-attendance
+    //             console.log("Submitting to /log-attendance with data:", fetcher.data.qrData); // Debug log
+    //             fetcher.submit(
+    //                 { data: fetcher.data.qrData },
+    //                 { method: "post", action: "/log-attendance" }
+    //             );
+    //         } else if (fetcher.data.message) {
+    //             console.log("Success from /log-attendance:", fetcher.data.message); // Debug log
+    //             setScannedData(null); // Clear scanned data after success
+    //         } else {
+    //             console.error("Unexpected fetcher data:", fetcher.data); // Debug log
+    //         }
+    //     }
+    // }, [fetcher.data, fetcher.state]);
+
+    // Handle webcam scanning
+    useEffect(() => {
+        console.log(fetcher.data)
+        navigator.mediaDevices
+            .getUserMedia({ video: { facingMode: "environment" } })
+            .then((stream) => {
+                console.log("Webcam detected"); // Debug log
+                setHasWebcam(true);
+                const video = videoRef.current;
+                const canvas = canvasRef.current;
+                if (!video || !canvas) {
+                    setError("Video or canvas element not available");
+                    console.log("Video or canvas missing for webcam"); // Debug log
+                    return;
+                }
+
+                video.srcObject = stream;
+                video.play();
+
+                const ctx = canvas.getContext("2d");
+                if (!ctx) {
+                    setError("Canvas context not available for webcam");
+                    console.log("Canvas context missing for webcam"); // Debug log
+                    return;
+                }
+
+                const scan = () => {
+                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                        canvas.height = video.videoHeight;
+                        canvas.width = video.videoWidth;
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const code = jsQR(imageData.data, imageData.width, imageData.height);
+                        if (code) {
+                            console.log("QR code detected from webcam:", code.data); // Debug log
+                            setScannedData(code.data);
+                            fetcher.submit(
+                                { data: code.data },
+                                { method: "post", action: "/scan" }
+                            );
+                        }
+                    }
+                    requestAnimationFrame(scan);
+                };
+                requestAnimationFrame(scan);
+            })
+            .catch((err) => {
+                console.log("No webcam detected:", err); // Debug log
+                setHasWebcam(false);
+            });
+
+        return () => {
+            if (videoRef.current?.srcObject) {
+                (videoRef.current.srcObject as MediaStream).getTracks().forEach((track) => track.stop());
+            }
+        };
+    }, [fetcher]);
+
+    // Handle file upload
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setError(null); // Clear previous errors
+        const file = event.target.files?.[0];
+        if (!file) {
+            setError("No file selected");
+            console.log("No file selected"); // Debug log
+            return;
+        }
+
+        console.log("File selected:", file.name); // Debug log
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = canvasRef.current;
+                if (!canvas) {
+                    setError("Canvas element not available");
+                    console.log("Canvas element not available for file upload"); // Debug log
+                    return;
+                }
+
+                const ctx = canvas.getContext("2d");
+                if (!ctx) {
+                    setError("Canvas context not available");
+                    console.log("Canvas context not available for file upload"); // Debug log
+                    return;
+                }
+
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+                const imageData = ctx.getImageData(0, 0, img.width, img.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                if (code) {
+                    console.log("QR code detected from image:", code.data); // Debug log
+                    setScannedData(code.data);
+                    fetcher.submit(
+                        { data: code.data },
+                        { method: "post", action: "/scan" }
+                    );
+                } else {
+                    setError("No QR code found in the uploaded image");
+                    console.log("No QR code found in image"); // Debug log
+                }
+            };
+            img.onerror = () => {
+                setError("Failed to load image");
+                console.log("Image load error"); // Debug log
+            };
+            img.src = e.target?.result as string;
+        };
+        reader.onerror = () => {
+            setError("Failed to read file");
+            console.log("FileReader error"); // Debug log
+        };
+        reader.readAsDataURL(file);
+    };
+
+    return (
+        <div className="flex ">
+            <div className="basis-2/3 bg-gray">
+                <div className="flex flex-col items-center  p-4">
+                    <h1 className="text-3xl text-center font-semibold">NIA-VI Annual Operation and Maintenance Reoriention Seminar</h1>
+                </div>
+            </div>
+            <div className="flex flex-col items-center justify-center  p-4 h-screen">
+                <h1 className="text-xl mb-4 text-gray-500 font-medium">Please scan QR code for your attendance</h1>
+                {hasWebcam === null && <p>Checking for webcam...</p>}
+                {hasWebcam && (
+                    <video ref={videoRef} className="mb-4 w-full max-w-md" />
+                )}
+                <canvas ref={canvasRef} className="hidden" />
+                {hasWebcam === false && (
+                    <div className="mb-4">
+                        <p>No webcam detected. Please upload a QR code image.</p>
+                        <fetcher.Form method="post" name='scannedFile' action='/scan' >
+                            <input
+                                type="file"
+                                accept="image/*"
+                                ref={fileInputRef}
+                                onChange={handleFileUpload}
+                                className="mt-2 p-2 border rounded"
+                                name='scannedQr'
+                            />
+                        </fetcher.Form>
+                    </div>
+                )}
+                {/* <Form id="qrForm" method="post" action="/scan">
+                <input type="hidden" name="data" />
+            </Form> */}
+                {/* {scannedData && (
+                <p className="mt-4 text-gray-600">Scanned QR Code Data: {scannedData}</p>
+            )} */}
+                {error && <p className="mt-4 text-red-500">{error}</p>}
+                {fetcher.data?.error && (
+                    <p className="mt-4 text-red-500">{fetcher.data.error}</p>
+                )}
+                {fetcher.data?.attendee && (
+                    <p className="mt-4 text-green-500">Welcome {fetcher.data.attendee}! We are glad for you to be here! </p>
+                )}
+            </div>
+        </div>
+    );
+}
+
+
+// "@chakra-ui/react": "^3.24.0",
+// "@emotion/react": "^11.14.0",
