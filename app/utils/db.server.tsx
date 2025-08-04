@@ -146,8 +146,7 @@ export async function loggedIn(user_id: string, event_id: string, day_number: nu
 }
 export async function findAttendance(user_id: string, event_id: string, day_number: number, time_of_day: string) {
     const client = await pool.connect();
-    const queryText = `SELECT * FROM attendance WHERE user_id = $1\n 
-                        AND event_id = $2 AND day_number = $3 AND time_of_day = $4`;
+    const queryText = `SELECT * FROM attendance WHERE user_id = $1 AND event_id = $2 AND day_number = $3 AND time_of_day = $4`;
 
     try {
 
@@ -167,6 +166,28 @@ export async function findAttendance(user_id: string, event_id: string, day_numb
     }
 }
 
+
+export async function getAllAttendance() {
+    const client = await pool.connect();
+    const queryText = `SELECT name FROM attendance`
+
+    try {
+
+        const result = await client.query(queryText);
+        if (result.rowCount !== 0) {
+            return { data: result.rows, message: "success", error: null }
+        } else {
+            return { data: null, message: "no attendance yet", error: null }
+        }
+
+
+    } catch (error) {
+        console.error("Database query error:", error);
+        return { message: "Database query error ", error: error }
+    } finally {
+        client.release();
+    }
+}
 
 
 

@@ -1,12 +1,32 @@
 import { useEffect, useRef, useState } from "react";
 import { Form, useActionData, useFetcher } from "react-router";
 import jsQR from "jsqr";
-import type { ActionFunctionArgs, } from "react-router";
+import type { ActionFunctionArgs, LoaderFunctionArgs, } from "react-router";
 import type { Route } from "./+types/scan";
 import { validateQrData } from "~/utils/validateQrData";
 import { validateQrCode } from "~/utils/validateQrCode";
-import { findAttendance, findOneUser, loggedIn } from "~/utils/db.server";
+import { findAttendance, findOneUser, getAllAttendance, loggedIn } from "~/utils/db.server";
 import { Spinner } from "@radix-ui/themes";
+
+import { useLoaderData } from "react-router";
+
+export async function loader({ request }: LoaderFunctionArgs) {
+    try {
+        const result = await getAllAttendance()
+        const { data } = result
+        if (!data) {
+            return { data: null, error: "no data or is null" }
+        }
+
+        // console.log(dataWithQrImage)
+        return { data, error: result.error }
+    } catch (error) {
+        console.log(error)
+        return { data: null, error: error }
+    }
+
+}
+
 
 
 export async function action({ request }) {
@@ -64,6 +84,7 @@ export default function Scan() {
     const [hasWebcam, setHasWebcam] = useState<boolean | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [scannedData, setScannedData] = useState<string | null>(null);
+    const { data, error: dataError } = useLoaderData<typeof loader>();
     // const [message, setMessage] = useState<string | null>(null)
     // Handle fetcher response for /log-attendance
     // useEffect(() => {
@@ -211,32 +232,51 @@ export default function Scan() {
 
     return (
 
-        <div className="flex flex-col items-center justify-center p-4 h-screen text-gray-600">
-            <h1 className="text-2xl text-center font-semibold max-w-2xl">
-                RE-ORIENTATION TRAINING AND SEMINAR WORKSHOP FOR OPERATION AND MAINTENANCE PERSONNEL AND STAFF
-            </h1>
-            {fetcher.data?.error && (
-                <p className="mt-4 text-red-500">{'Sorry, can you try again?'}</p>
-            )}
-            {fetcher.data?.isLogin == false ? (
-                <p className="mt-4 text-green-700 text-xl font-semibold">
-                    Welcome <span className="text-2xl text-black">{fetcher.data.name}</span>! We are glad for you to be here!
-                </p>
-            ) : null}
-            {fetcher.data?.isLogin && (
-                <p className="mt-4 text-green-700 text-xl font-semibold">Hi{` `}
-                    <span className="text-2xl text-black">{fetcher.data.name}</span>!  You are already logged in.Thank You!
-                </p>
-            )}
-            <h1 className="text-lg mb-4 mt-8 text-gray-500 font-medium">
-                Please scan QR code for your attendance
-            </h1>
-            {hasWebcam === null && <p>Checking for webcam...</p>}
-            {fetcher.state !== 'idle' && <Spinner size='3' />}
-            <video ref={videoRef} className="mb-4 w-full max-w-xs" />
-            <canvas ref={canvasRef} className="hidden" />
 
-            {/* {hasWebcam === false && (
+        <div className="flex">
+            <div className="basis-4/5 border-r-solid border-r-1 border-gray-200">
+                <div className="flex flex-col items-center justify-start p-4 h-screen text-black">
+                    <h1 className="text-2xl text-center font-semibold max-w-2xl">
+                        RE-ORIENTATION TRAINING AND SEMINAR WORKSHOP FOR OPERATION AND MAINTENANCE PERSONNEL AND STAFF
+                    </h1>
+                    <div className="w-full">
+                        <p className="pt-8 text-gray-500">Currently Attending: </p>
+                    </div>
+                    <div className="w-full">
+                        <ul className="flex gap-1 justify-around flex-wrap mt-4 text-left">
+                            {data && data.map((item) => {
+                                return (
+                                    <li className="text-center" key={item.name}>{item.name}</li>
+                                )
+                            })}
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+            <div className="flex flex-col items-center justify-center h-screen text-center">
+                {fetcher.data?.error && (
+                    <p className="mt-4 text-red-500">{'Sorry, can you try again?'}</p>
+                )}
+                {fetcher.data?.isLogin == false ? (
+                    <p className="mt-4 text-green-700 text-xl font-semibold">
+                        Welcome <span className="text-2xl text-black">{fetcher.data.name}</span>! We are glad for you to be here!
+                    </p>
+                ) : null}
+                {fetcher.data?.isLogin && (
+                    <p className="mt-4 text-green-700 text-xl font-semibold">Hi{` `}
+                        <span className="text-2xl text-black">{fetcher.data.name}</span>!  You are already logged in.Thank You!
+                    </p>
+                )}
+                <h1 className="text-lg mb-4 mt-8 text-gray-500 font-medium">
+                    Please scan QR code for your attendance
+                </h1>
+                {hasWebcam === null && <p>Checking for webcam...</p>}
+                {fetcher.state !== 'idle' && <Spinner size='3' />}
+                <video ref={videoRef} className="mb-4 w-full max-w-xs" />
+                <canvas ref={canvasRef} className="hidden" />
+
+                {/* {hasWebcam === false && (
                 <div className="mb-4">
                     <p>No webcam detected. Please upload a QR code image.</p>
                     <fetcher.Form method="post" name="scannedFile" action="/scan">
@@ -251,15 +291,18 @@ export default function Scan() {
                     </fetcher.Form>
                 </div>
             )} */}
-            {/* <Form id="qrForm" method="post" action="/scan">
+                {/* <Form id="qrForm" method="post" action="/scan">
           <input type="hidden" name="data" />
         </Form> */}
-            {/* {scannedData && (
+                {/* {scannedData && (
           <p className="mt-4 text-gray-600">Scanned QR Code Data: {scannedData}</p>
         )} */}
-            {/* {error && <p className="mt-4 text-red-500">{error}</p>} */}
+                {/* {error && <p className="mt-4 text-red-500">{error}</p>} */}
 
+            </div>
         </div>
+
+
 
     );
 }
