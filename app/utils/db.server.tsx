@@ -151,10 +151,11 @@ export async function findAttendance(user_id: string, event_id: string, day_numb
     try {
 
         const result = await client.query(queryText, [user_id, event_id, day_number, time_of_day]);
-        if (result.rowCount !== 0) {
-            return { result: true, message: "Attendee already loggedin", error: null }
-        } else {
+        if (result.rowCount === 0) {
+
             return { result: false, message: "Attendee not yet loggedin", error: null }
+        } else {
+            return { result: true, message: "Attendee already loggedin", error: null }
         }
 
 
