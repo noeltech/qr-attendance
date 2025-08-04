@@ -49,7 +49,7 @@ export async function action({ request }) {
 
 
     console.log(findResult)
-    return { message: 'QR Code successfully validated', attendee: findResult.name, isLogin: false }
+    return { message: 'QR Code successfully validated', name: findResult.name, isLogin: false }
 }
 
 
@@ -218,11 +218,11 @@ export default function Scan() {
             {fetcher.data?.error && (
                 <p className="mt-4 text-red-500">{'Sorry, can you try again?'}</p>
             )}
-            {!fetcher.data?.isLogin && (
+            {fetcher.data?.isLogin == false ? (
                 <p className="mt-4 text-green-700 text-xl font-semibold">
-                    Welcome <span className="text-2xl text-black">{fetcher.data.attendee}</span>! We are glad for you to be here!
+                    Welcome <span className="text-2xl text-black">{fetcher.data.name}</span>! We are glad for you to be here!
                 </p>
-            )}
+            ) : null}
             {fetcher.data?.isLogin && (
                 <p className="mt-4 text-green-700 text-xl font-semibold">Hi{` `}
                     <span className="text-2xl text-black">{fetcher.data.name}</span>!  You are already logged in.Thank You!
