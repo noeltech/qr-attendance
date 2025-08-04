@@ -6,6 +6,7 @@ import type { Route } from "./+types/scan";
 import { validateQrData } from "~/utils/validateQrData";
 import { validateQrCode } from "~/utils/validateQrCode";
 import { findOneUser } from "~/utils/db.server";
+import { Spinner } from "@radix-ui/themes";
 
 
 export async function action({ request }) {
@@ -190,53 +191,52 @@ export default function Scan() {
     };
 
     return (
-        <div className="flex">
-            <div className="basis-2/3 bg-gray-100">
-                <div className="flex flex-col items-center p-4">
-                    <h1 className="text-3xl text-center font-semibold">
-                        NIA-VI Annual Operation and Maintenance Reoriention Seminar
-                    </h1>
+
+
+
+        <div className="flex flex-col items-center justify-center p-4 h-screen">
+            <h1 className="text-3xl text-center font-semibold max-w-2xl">
+                RE-ORIENTATION TRAINING AND SEMINAR WORKSHOP FOR OPERATION AND MAINTENANCE PERSONNEL AND STAFF
+            </h1>
+            <h1 className="text-lg mb-4 mt-8 text-gray-500 font-medium">
+                Please scan QR code for your attendance
+            </h1>
+            {hasWebcam === null && <p>Checking for webcam...</p>}
+            {fetcher.state !== 'idle' && <Spinner size='3' />}
+            <video ref={videoRef} className="mb-4 w-full max-w-md" />
+            <canvas ref={canvasRef} className="hidden" />
+            {/* {hasWebcam === false && (
+                <div className="mb-4">
+                    <p>No webcam detected. Please upload a QR code image.</p>
+                    <fetcher.Form method="post" name="scannedFile" action="/scan">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            ref={fileInputRef}
+                            onChange={handleFileUpload}
+                            className="mt-2 p-2 border rounded"
+                            name="scannedQr"
+                        />
+                    </fetcher.Form>
                 </div>
-            </div>
-            <div className="flex flex-col items-center justify-center p-4 h-screen">
-                <h1 className="text-xl mb-4 text-gray-500 font-medium">
-                    Please scan QR code for your attendance
-                </h1>
-                {hasWebcam === null && <p>Checking for webcam...</p>}
-                <video ref={videoRef} className="mb-4 w-full max-w-md" />
-                <canvas ref={canvasRef} className="hidden" />
-                {hasWebcam === false && (
-                    <div className="mb-4">
-                        <p>No webcam detected. Please upload a QR code image.</p>
-                        <fetcher.Form method="post" name="scannedFile" action="/scan">
-                            <input
-                                type="file"
-                                accept="image/*"
-                                ref={fileInputRef}
-                                onChange={handleFileUpload}
-                                className="mt-2 p-2 border rounded"
-                                name="scannedQr"
-                            />
-                        </fetcher.Form>
-                    </div>
-                )}
-                {/* <Form id="qrForm" method="post" action="/scan">
+            )} */}
+            {/* <Form id="qrForm" method="post" action="/scan">
           <input type="hidden" name="data" />
         </Form> */}
-                {/* {scannedData && (
+            {/* {scannedData && (
           <p className="mt-4 text-gray-600">Scanned QR Code Data: {scannedData}</p>
         )} */}
-                {error && <p className="mt-4 text-red-500">{error}</p>}
-                {fetcher.data?.error && (
-                    <p className="mt-4 text-red-500">{fetcher.data.error}</p>
-                )}
-                {fetcher.data?.attendee && (
-                    <p className="mt-4 text-green-500">
-                        Welcome {fetcher.data.attendee}! We are glad for you to be here!
-                    </p>
-                )}
-            </div>
+            {error && <p className="mt-4 text-red-500">{error}</p>}
+            {fetcher.data?.error && (
+                <p className="mt-4 text-red-500">{fetcher.data.error}</p>
+            )}
+            {fetcher.data?.attendee && (
+                <p className="mt-4 text-green-500">
+                    Welcome <span className="text-xl text-black">{fetcher.data.attendee}!</span> We are glad for you to be here!
+                </p>
+            )}
         </div>
+
     );
 }
 
