@@ -38,7 +38,7 @@ export async function action({ request }) {
     //CHECK ATTENDEE IF ALREADY LOGGEDIN OR NOT
     const isLogin = await findAttendance(qrCodeResult.userID, qrCodeResult.event_id, 1, 'am')
     console.log(isLogin)
-    if (isLogin.result) {
+    if (isLogin.result == true) {
         return { message: `Hi ${findResult.name}! You are already logged in.  Thank You!`, isLogin: true, name: findResult.name }
     }
     //LOG ATTENDANCE
@@ -218,7 +218,7 @@ export default function Scan() {
             {fetcher.data?.error && (
                 <p className="mt-4 text-red-500">{'Sorry, can you try again?'}</p>
             )}
-            {fetcher.data?.attendee && (
+            {!fetcher.data?.isLogin && (
                 <p className="mt-4 text-green-700 text-xl font-semibold">
                     Welcome <span className="text-2xl text-black">{fetcher.data.attendee}</span>! We are glad for you to be here!
                 </p>
