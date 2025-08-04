@@ -231,10 +231,10 @@ export default function Scan() {
                 Please scan QR code for your attendance
             </h1>
             {hasWebcam === null && <p>Checking for webcam...</p>}
-            {fetcher.state !== 'idle' ? <Spinner size='3' /> : <>
-                <video ref={videoRef} className="mb-4 w-full max-w-xs" />
-                <canvas ref={canvasRef} className="hidden" />
-            </>}
+            {fetcher.state !== 'idle' && <Spinner size='3' />}
+            <video ref={videoRef} className="mb-4 w-full max-w-xs" />
+            <canvas ref={canvasRef} className="hidden" />
+
             {/* {hasWebcam === false && (
                 <div className="mb-4">
                     <p>No webcam detected. Please upload a QR code image.</p>
