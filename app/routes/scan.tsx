@@ -93,6 +93,7 @@ export default function Scan() {
 
     useEffect(() => {
         console.log("Webcam useEffect triggered, videoRef:", !!videoRef.current, "canvasRef:", !!canvasRef.current); // Debug log
+        if (fetcher.state !== 'idle') { return }
         navigator.mediaDevices
             .getUserMedia({ video: { facingMode: "environment" } })
             .then((stream) => {
