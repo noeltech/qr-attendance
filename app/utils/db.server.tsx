@@ -1,6 +1,8 @@
 // app/db.server.ts
 import { Pool } from "pg";
 
+// DATABASE_URL=postgresql://postgres:postgres@172.24.128.1:5432/nia6_attendance
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     // Optional: Add SSL for production if required by your database provider
@@ -35,12 +37,13 @@ export async function checkDbConnection() {
 }
 
 
-export async function findOneUser(id: number) {
+export async function findOneUser(id: string) {
     const client = await pool.connect();
-    const query = `SELECT name FROM attendees WHERE user_id = ${id}`
+    const queryText = `SELECT name FROM attendees WHERE user_id = $1`;
+
     try {
 
-        const result = await client.query(query);
+        const result = await client.query(queryText, [id]);
         if (result.rows[0] <= 0) {
             return { error: 'No user found' }
         }
@@ -53,9 +56,10 @@ export async function findOneUser(id: number) {
         client.release();
     }
 }
+
 export async function getAllUsers() {
     const client = await pool.connect();
-    const query = `SELECT user_id,name,email FROM attendees `
+    const query = `SELECT user_id, name, designation FROM attendees `
     try {
 
         const result = await client.query(query);
@@ -75,7 +79,7 @@ export async function getAllUsers() {
 
 export async function getAllQrCodes() {
     const client = await pool.connect();
-    const queryText = `SELECT user_id,event_id,token,qr_data FROM qr_codes`
+    const queryText = `SELECT user_id,event_id,token,qr_data,name FROM qr_codes`
     try {
         const result = await client.query(queryText)
         return { data: result.rows, success: true, error: "" }
@@ -94,18 +98,19 @@ export async function saveToQrCodes(data: Object[]) {
     const values = data
         .map((attendee, index) => {
             // Format values, escaping strings with single quotes and handling SQL injection
-            const user_id = attendee.user_id;
-            const event_id = attendee.event_id; // Escape single quotes
+            const user_id = `'${attendee.user_id}'`;
+            const event_id = `'${attendee.event_id}'`; // Escape single quotes
             const token = `'${attendee.token}'`; // Escape single quotes
             const qr_data = `'${attendee.qrData}'`; // Escape single quotes
             const used = 'FALSE';
-            return `(${user_id}, ${event_id}, ${token}, ${qr_data}, ${used})`;
+            const name = `'${attendee.name}'`
+            return `(${user_id}, ${event_id}, ${token}, ${qr_data}, ${used},${name})`;
         })
         .join(',\n');
 
-    let query = `INSERT INTO qr_codes (user_id, event_id, token,qr_data,used) VALUES\n`
+    let query = `INSERT INTO qr_codes (user_id, event_id, token,qr_data,used ,name) VALUES\n`
     query += values + ';'
-    console.log(query)
+
     try {
 
         const result = await client.query(query);

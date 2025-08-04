@@ -23,7 +23,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 }
             })
         );
-        console.log(dataWithQrImage)
+        // console.log(dataWithQrImage)
         return { data: dataWithQrImage, error: result.error }
     } catch (error) {
         console.log(error)
@@ -46,8 +46,8 @@ export default function ViewQrCodes() {
                 <ul className="w-full flex flex-wrap justify-around">{
                     data.map((item) => {
                         return (
-                            <li key={item.user_id}>
-                                <p>{item.user_id}</p>
+                            <li key={item.user_id} className="flex flex-col items-center">
+                                <p>{item.name}</p>
                                 <div className=" h-48">
 
                                     <img

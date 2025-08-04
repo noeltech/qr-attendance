@@ -36,7 +36,7 @@ export default function Attendees() {
         }
         try {
             const resultWithQrData = data.map((item) => {
-                const result = generateQrData(item.user_id, 1);
+                const result = generateQrData(item.user_id, '6d5ca3a9-63e3-4a71-8787-3e42e3b4e606', item.name);
                 return result
             })
             console.log(resultWithQrData)
@@ -55,12 +55,12 @@ export default function Attendees() {
         <div className=" items-center p-4">
             <h1 className="text-2xl">Attendees</h1>
             {error && <>
-                <p>Looks like theres some kind of problem, but dont worry, we fix this ASAP! we got you!</p>
+                <p>Looks like theres some kind of problem, but dont worry, we will fix this ASAP! we got you!</p>
             </>}
             {data && <>
                 <ul>
                     {data.map((item) => (
-                        <li className="" key={item.user_id}><p className="flex gap-12       "> <span>{item.name}</span> {'     '}  <span>{item.email}</span></p></li>
+                        <li className="" key={item.user_id}><p className="flex gap-12       "> <span>{item.name}</span> {'     '}  <span>{item.designation}</span></p></li>
                     ))}
                 </ul>
             </>}

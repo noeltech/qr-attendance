@@ -1,6 +1,6 @@
 import CryptoJS from "crypto-js";
 
-export function generateQrData(user_id: number, event_id: number) {
+export function generateQrData(user_id: string, event_id: string, name: string) {
     // console.log("Generate QR for:", { user_id, event_id }); // Debug log
 
     if (!user_id || !event_id) {
@@ -18,7 +18,7 @@ export function generateQrData(user_id: number, event_id: number) {
 
         const qrData = `http://localhost:5173/log-attendance?data=${encodeURIComponent(encrypted)}`;
         // console.log("QR code data:", qrData); // Debug log
-        return { user_id, event_id, token, qrData }
+        return { user_id, event_id, token, qrData, name }
     } catch (error) {
         return { error: error }
     }
