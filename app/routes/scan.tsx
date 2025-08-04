@@ -29,22 +29,25 @@ export async function action({ request }) {
         return { error: qrCodeResult.error }
     }
 
-    //CHECK ATTENDEE IF ALREADY LOGGEDIN OR NOT
-    const isLogin = await findAttendance(qrCodeResult.userID, qrCodeResult.event_id, 1, 'am')
-    console.log(isLogin)
-    if (isLogin.result) {
-        return { message: 'You are already logged in.  Thank You!', isLogin: true }
-    }
-    //LOG ATTENDANCE
-    const loggedInResult = await loggedIn(qrCodeResult.userID, qrCodeResult.event_id, 1, 'am')
-    if (loggedInResult.error) {
-        return { error: loggedInResult.error }
-    }
-
     const findResult = await findOneUser(qrCodeResult.userID)
     if (findResult.error) {
         return { error: `${findResult.error}` }
     }
+
+
+    //CHECK ATTENDEE IF ALREADY LOGGEDIN OR NOT
+    const isLogin = await findAttendance(qrCodeResult.userID, qrCodeResult.event_id, 1, 'am')
+    console.log(isLogin)
+    if (isLogin.result) {
+        return { message: `Hi ${findResult.name}! You are already logged in.  Thank You!`, isLogin: true }
+    }
+    //LOG ATTENDANCE
+    const loggedInResult = await loggedIn(qrCodeResult.userID, qrCodeResult.event_id, 1, 'am', findResult.name)
+    if (loggedInResult.error) {
+        return { error: loggedInResult.error }
+    }
+
+
     console.log(findResult)
     return { message: 'QR Code successfully validated', attendee: findResult.name, isLogin: false }
 }
@@ -61,7 +64,7 @@ export default function Scan() {
     const [hasWebcam, setHasWebcam] = useState<boolean | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [scannedData, setScannedData] = useState<string | null>(null);
-
+    // const [message, setMessage] = useState<string | null>(null)
     // Handle fetcher response for /log-attendance
     // useEffect(() => {
     //     console.log("useEffect triggered, fetcher state:", fetcher.state, "fetcher data:", fetcher.data); // Debug log
@@ -86,6 +89,8 @@ export default function Scan() {
     // }, [fetcher.data, fetcher.state]);
 
     // Handle webcam scanning
+
+
     useEffect(() => {
         console.log("Webcam useEffect triggered, videoRef:", !!videoRef.current, "canvasRef:", !!canvasRef.current); // Debug log
         navigator.mediaDevices
@@ -245,7 +250,7 @@ export default function Scan() {
                 <p className="mt-4 text-red-500">{'Sorry, can you try again?'}</p>
             )}
             {fetcher.data?.attendee && (
-                <p className="mt-4 text-green-500">
+                <p className="mt-4 text-green-500 text-lg">
                     Welcome <span className="text-xl text-black">{fetcher.data.attendee}!</span> We are glad for you to be here!
                 </p>
             )}

@@ -127,9 +127,9 @@ export async function saveToQrCodes(data: Object[]) {
 
 
 
-export async function loggedIn(user_id: string, event_id: string, day_number: number, time_of_day: string) {
+export async function loggedIn(user_id: string, event_id: string, day_number: number, time_of_day: string, name: string) {
     const client = await pool.connect();
-    const queryText = `INSERT INTO attendance (user_id, event_id,day_number,time_of_day) VALUES ($1,$2,$3,$4)`;
+    const queryText = `INSERT INTO attendance (user_id, event_id,day_number,time_of_day,name) VALUES ($1,$2,$3,$4,$5)`;
 
     try {
 
