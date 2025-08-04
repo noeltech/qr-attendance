@@ -5,7 +5,7 @@ import type { ActionFunctionArgs, } from "react-router";
 import type { Route } from "./+types/scan";
 import { validateQrData } from "~/utils/validateQrData";
 import { validateQrCode } from "~/utils/validateQrCode";
-import { findOneUser } from "~/utils/db.server";
+import { findAttendance, findOneUser, loggedIn } from "~/utils/db.server";
 import { Spinner } from "@radix-ui/themes";
 
 
@@ -26,14 +26,27 @@ export async function action({ request }) {
     console.log(qrCodeResult)
 
     if (qrCodeResult.error) {
-        return { error: qrDataresult.error }
+        return { error: qrCodeResult.error }
     }
+
+    //CHECK ATTENDEE IF ALREADY LOGGEDIN OR NOT
+    const isLogin = await findAttendance(qrCodeResult.userID, qrCodeResult.event_id, 1, 'am')
+    console.log(isLogin)
+    if (isLogin.result) {
+        return { message: 'You are already logged in.  Thank You!', isLogin: true }
+    }
+    //LOG ATTENDANCE
+    const loggedInResult = await loggedIn(qrCodeResult.userID, qrCodeResult.event_id, 1, 'am')
+    if (loggedInResult.error) {
+        return { error: loggedInResult.error }
+    }
+
     const findResult = await findOneUser(qrCodeResult.userID)
     if (findResult.error) {
         return { error: `${findResult.error}` }
     }
     console.log(findResult)
-    return { message: 'QR Code successfully validated', attendee: findResult.name }
+    return { message: 'QR Code successfully validated', attendee: findResult.name, isLogin: false }
 }
 
 
@@ -50,27 +63,27 @@ export default function Scan() {
     const [scannedData, setScannedData] = useState<string | null>(null);
 
     // Handle fetcher response for /log-attendance
-    useEffect(() => {
-        console.log("useEffect triggered, fetcher state:", fetcher.state, "fetcher data:", fetcher.data); // Debug log
-        if (fetcher.data && fetcher.state === "idle") {
-            if (fetcher.data.error) {
-                setError(fetcher.data.error);
-                console.error("Fetcher error:", fetcher.data.error); // Debug log
-            } else if (fetcher.data.qrData) {
-                // Submit to /log-attendance
-                console.log("Submitting to /log-attendance with data:", fetcher.data.qrData); // Debug log
-                fetcher.submit(
-                    { data: fetcher.data.qrData },
-                    { method: "post", action: "/log-attendance" }
-                );
-            } else if (fetcher.data.message || fetcher.data.attendee) {
-                console.log("Success from /log-attendance:", fetcher.data.message || fetcher.data.attendee); // Debug log
-                setScannedData(null); // Clear scanned data after success
-            } else {
-                console.error("Unexpected fetcher data:", fetcher.data); // Debug log
-            }
-        }
-    }, [fetcher.data, fetcher.state]);
+    // useEffect(() => {
+    //     console.log("useEffect triggered, fetcher state:", fetcher.state, "fetcher data:", fetcher.data); // Debug log
+    //     if (fetcher.data && fetcher.state === "idle") {
+    //         if (fetcher.data.error) {
+    //             setError(fetcher.data.error);
+    //             console.error("Fetcher error:", fetcher.data.error); // Debug log
+    //         } else if (fetcher.data.qrData) {
+    //             // Submit to /log-attendance
+    //             console.log("Submitting to /log-attendance with data:", fetcher.data.qrData); // Debug log
+    //             fetcher.submit(
+    //                 { data: fetcher.data.qrData },
+    //                 { method: "post", action: "/log-attendance" }
+    //             );
+    //         } else if (fetcher.data.message || fetcher.data.attendee) {
+    //             console.log("Success from /log-attendance:", fetcher.data.message || fetcher.data.attendee); // Debug log
+    //             setScannedData(null); // Clear scanned data after success
+    //         } else {
+    //             console.error("Unexpected fetcher data:", fetcher.data); // Debug log
+    //         }
+    //     }
+    // }, [fetcher.data, fetcher.state]);
 
     // Handle webcam scanning
     useEffect(() => {
@@ -203,9 +216,9 @@ export default function Scan() {
             </h1>
             {hasWebcam === null && <p>Checking for webcam...</p>}
             {fetcher.state !== 'idle' && <Spinner size='3' />}
-            <video ref={videoRef} className="mb-4 w-full max-w-sm" />
+            <video ref={videoRef} className="mb-4 w-full max-w-xs" />
             <canvas ref={canvasRef} className="hidden" />
-            {/* {hasWebcam === false && (
+            {hasWebcam === false && (
                 <div className="mb-4">
                     <p>No webcam detected. Please upload a QR code image.</p>
                     <fetcher.Form method="post" name="scannedFile" action="/scan">
@@ -219,7 +232,7 @@ export default function Scan() {
                         />
                     </fetcher.Form>
                 </div>
-            )} */}
+            )}
             {/* <Form id="qrForm" method="post" action="/scan">
           <input type="hidden" name="data" />
         </Form> */}
@@ -233,6 +246,11 @@ export default function Scan() {
             {fetcher.data?.attendee && (
                 <p className="mt-4 text-green-500">
                     Welcome <span className="text-xl text-black">{fetcher.data.attendee}!</span> We are glad for you to be here!
+                </p>
+            )}
+            {fetcher.data?.isLogin && (
+                <p className="mt-4 text-green-500">
+                    You are already logged in Thank You!
                 </p>
             )}
         </div>

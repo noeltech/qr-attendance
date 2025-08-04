@@ -124,6 +124,52 @@ export async function saveToQrCodes(data: Object[]) {
         client.release();
     }
 }
+
+
+
+export async function loggedIn(user_id: string, event_id: string, day_number: number, time_of_day: string) {
+    const client = await pool.connect();
+    const queryText = `INSERT INTO attendance (user_id, event_id,day_number,time_of_day) VALUES ($1,$2,$3,$4)`;
+
+    try {
+
+        const result = await client.query(queryText, [user_id, event_id, day_number, time_of_day]);
+
+        return { success: true, message: 'Successfuly loggedin', error: null };
+
+    } catch (error) {
+        console.error("Database query error:", error);
+        return { success: false, message: 'Loggedin failed', error: error }
+    } finally {
+        client.release();
+    }
+}
+export async function findAttendance(user_id: string, event_id: string, day_number: number, time_of_day: string) {
+    const client = await pool.connect();
+    const queryText = `SELECT * FROM attendance WHERE user_id = $1\n 
+                        AND event_id = $2 AND day_number = $3 AND time_of_day = $4`;
+
+    try {
+
+        const result = await client.query(queryText, [user_id, event_id, day_number, time_of_day]);
+        if (result.rowCount !== 0) {
+            return { result: true, message: "Attendee already loggedin", error: null }
+        } else {
+            return { result: false, message: "Attendee not yet loggedin", error: null }
+        }
+
+
+    } catch (error) {
+        console.error("Database query error:", error);
+        return { message: "Database query error ", error: error }
+    } finally {
+        client.release();
+    }
+}
+
+
+
+
 // Optional: Close the pool on app shutdown
 process.on("SIGTERM", async () => {
     await pool.end();

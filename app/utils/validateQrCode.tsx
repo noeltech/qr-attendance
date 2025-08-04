@@ -52,7 +52,7 @@ export async function validateQrCode(qrData: string) {
         // );
         console.log("Attendance recorded"); // Debug log
 
-        return { message: "Attendance recorded successfully", userID: user_id };
+        return { message: "Attendance recorded successfully", userID: user_id, event_id, error: null };
     } catch (error) {
         console.error("Error in log-attendance:", error); // Debug log
         return { error: `Invalid QR code data: ${(error as Error).message}`, status: 403 };
