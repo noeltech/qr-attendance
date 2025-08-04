@@ -39,7 +39,7 @@ export async function action({ request }) {
     const isLogin = await findAttendance(qrCodeResult.userID, qrCodeResult.event_id, 1, 'am')
     console.log(isLogin)
     if (isLogin.result) {
-        return { message: `Hi ${findResult.name}! You are already logged in.  Thank You!`, isLogin: true }
+        return { message: `Hi ${findResult.name}! You are already logged in.  Thank You!`, isLogin: true, name: findResult.name }
     }
     //LOG ATTENDANCE
     const loggedInResult = await loggedIn(qrCodeResult.userID, qrCodeResult.event_id, 1, 'am', findResult.name)
@@ -210,12 +210,23 @@ export default function Scan() {
 
     return (
 
-
-
-        <div className="flex flex-col items-center justify-center p-4 h-screen">
-            <h1 className="text-3xl text-center font-semibold max-w-2xl">
+        <div className="flex flex-col items-center justify-center p-4 h-screen text-gray-600">
+            <h1 className="text-2xl text-center font-semibold max-w-2xl">
                 RE-ORIENTATION TRAINING AND SEMINAR WORKSHOP FOR OPERATION AND MAINTENANCE PERSONNEL AND STAFF
             </h1>
+            {fetcher.data?.error && (
+                <p className="mt-4 text-red-500">{'Sorry, can you try again?'}</p>
+            )}
+            {fetcher.data?.attendee && (
+                <p className="mt-4 text-green-700 text-xl font-semibold">
+                    Welcome <span className="text-2xl text-black">{fetcher.data.attendee}</span>! We are glad for you to be here!
+                </p>
+            )}
+            {fetcher.data?.isLogin && (
+                <p className="mt-4 text-green-700 text-xl font-semibold">Hi{` `}
+                    <span className="text-2xl text-black">{fetcher.data.name}</span>!  You are already logged in.Thank You!
+                </p>
+            )}
             <h1 className="text-lg mb-4 mt-8 text-gray-500 font-medium">
                 Please scan QR code for your attendance
             </h1>
@@ -246,19 +257,7 @@ export default function Scan() {
           <p className="mt-4 text-gray-600">Scanned QR Code Data: {scannedData}</p>
         )} */}
             {/* {error && <p className="mt-4 text-red-500">{error}</p>} */}
-            {fetcher.data?.error && (
-                <p className="mt-4 text-red-500">{'Sorry, can you try again?'}</p>
-            )}
-            {fetcher.data?.attendee && (
-                <p className="mt-4 text-green-500 text-lg">
-                    Welcome <span className="text-xl text-black">{fetcher.data.attendee}!</span> We are glad for you to be here!
-                </p>
-            )}
-            {fetcher.data?.isLogin && (
-                <p className="mt-4 text-green-500">
-                    You are already logged in Thank You!
-                </p>
-            )}
+
         </div>
 
     );

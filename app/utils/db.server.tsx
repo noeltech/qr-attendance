@@ -133,7 +133,7 @@ export async function loggedIn(user_id: string, event_id: string, day_number: nu
 
     try {
 
-        const result = await client.query(queryText, [user_id, event_id, day_number, time_of_day]);
+        const result = await client.query(queryText, [user_id, event_id, day_number, time_of_day, name]);
 
         return { success: true, message: 'Successfuly loggedin', error: null };
 
