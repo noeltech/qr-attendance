@@ -203,7 +203,7 @@ export default function Scan() {
             </h1>
             {hasWebcam === null && <p>Checking for webcam...</p>}
             {fetcher.state !== 'idle' && <Spinner size='3' />}
-            <video ref={videoRef} className="mb-4 w-full max-w-md" />
+            <video ref={videoRef} className="mb-4 w-full max-w-sm" />
             <canvas ref={canvasRef} className="hidden" />
             {/* {hasWebcam === false && (
                 <div className="mb-4">
@@ -226,9 +226,9 @@ export default function Scan() {
             {/* {scannedData && (
           <p className="mt-4 text-gray-600">Scanned QR Code Data: {scannedData}</p>
         )} */}
-            {error && <p className="mt-4 text-red-500">{error}</p>}
+            {/* {error && <p className="mt-4 text-red-500">{error}</p>} */}
             {fetcher.data?.error && (
-                <p className="mt-4 text-red-500">{fetcher.data.error}</p>
+                <p className="mt-4 text-red-500">{'Sorry, can you try again?'}</p>
             )}
             {fetcher.data?.attendee && (
                 <p className="mt-4 text-green-500">
