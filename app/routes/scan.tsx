@@ -66,9 +66,7 @@ export async function action({ request }) {
     if (loggedInResult.error) {
         return { error: loggedInResult.error }
     }
-
-
-    console.log(findResult)
+    console.log(isLogin.result)
     return { message: 'QR Code successfully validated', name: findResult.name, isLogin: false }
 }
 
@@ -276,21 +274,21 @@ export default function Scan() {
                 <video ref={videoRef} className="mb-4 w-full max-w-xs" />
                 <canvas ref={canvasRef} className="hidden" />
 
-                {/* {hasWebcam === false && (
-                <div className="mb-4">
-                    <p>No webcam detected. Please upload a QR code image.</p>
-                    <fetcher.Form method="post" name="scannedFile" action="/scan">
-                        <input
-                            type="file"
-                            accept="image/*"
-                            ref={fileInputRef}
-                            onChange={handleFileUpload}
-                            className="mt-2 p-2 border rounded"
-                            name="scannedQr"
-                        />
-                    </fetcher.Form>
-                </div>
-            )} */}
+                {hasWebcam === false && (
+                    <div className="mb-4">
+                        <p>No webcam detected. Please upload a QR code image.</p>
+                        <fetcher.Form method="post" name="scannedFile" action="/scan">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                ref={fileInputRef}
+                                onChange={handleFileUpload}
+                                className="mt-2 p-2 border rounded"
+                                name="scannedQr"
+                            />
+                        </fetcher.Form>
+                    </div>
+                )}
                 {/* <Form id="qrForm" method="post" action="/scan">
           <input type="hidden" name="data" />
         </Form> */}
