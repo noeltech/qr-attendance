@@ -1,5 +1,6 @@
 // app/db.server.ts
 import { Pool } from "pg";
+import { data } from "react-router";
 
 // DATABASE_URL=postgresql://postgres:postgres@172.24.128.1:5432/nia6_attendance
 
@@ -39,7 +40,7 @@ export async function checkDbConnection() {
 
 export async function findOneUser(id: string) {
     const client = await pool.connect();
-    const queryText = `SELECT name FROM attendees WHERE user_id = $1`;
+    const queryText = `SELECT name,designation FROM attendees WHERE user_id = $1`;
 
     try {
 
@@ -127,13 +128,14 @@ export async function saveToQrCodes(data: Object[]) {
 
 
 
-export async function loggedIn(user_id: string, event_id: string, day_number: number, time_of_day: string, name: string) {
+export async function loggedIn(user_id: string, event_id: string, day_number: number, time_of_day: string, name: string, designation: string, role: string) {
+
     const client = await pool.connect();
-    const queryText = `INSERT INTO attendance (user_id, event_id,day_number,time_of_day,name) VALUES ($1,$2,$3,$4,$5)`;
+    const queryText = `INSERT INTO attendance (user_id, event_id,day_number,time_of_day,name,designation,role) VALUES ($1,$2,$3,$4,$5,$6,$7)`;
 
     try {
 
-        const result = await client.query(queryText, [user_id, event_id, day_number, time_of_day, name]);
+        const result = await client.query(queryText, [user_id, event_id, day_number, time_of_day, name, designation, role]);
 
         return { success: true, message: 'Successfuly loggedin', error: null };
 
@@ -170,12 +172,13 @@ export async function findAttendance(user_id: string, event_id: string, day_numb
 
 export async function getAllAttendance() {
     const client = await pool.connect();
-    const queryText = `SELECT name FROM attendance`
+    const queryText = `SELECT * FROM attendance`
 
     try {
 
         const result = await client.query(queryText);
         if (result.rowCount !== 0) {
+            console.log(result.rows)
             return { data: result.rows, message: "success", error: null }
         } else {
             return { data: null, message: "no attendance yet", error: null }

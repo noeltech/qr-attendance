@@ -18,7 +18,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             return { data: null, error: "no data or is null" }
         }
 
-        // console.log(dataWithQrImage)
+        // console.log(data)
         return { data, error: result.error }
     } catch (error) {
         console.log(error)
@@ -62,7 +62,9 @@ export async function action({ request }) {
         return { message: `Hi ${findResult.name}! You are already logged in.  Thank You!`, isLogin: true, name: findResult.name }
     }
     //LOG ATTENDANCE
-    const loggedInResult = await loggedIn(qrCodeResult.userID, qrCodeResult.event_id, 1, 'am', findResult.name)
+    const designation = findResult?.designation || ""
+    const role = findResult?.role || ""
+    const loggedInResult = await loggedIn(qrCodeResult.userID, qrCodeResult.event_id, 1, 'am', findResult.name, designation, role)
     if (loggedInResult.error) {
         return { error: loggedInResult.error }
     }
@@ -231,73 +233,87 @@ export default function Scan() {
     return (
 
 
-        <div className="flex">
-            <div className="basis-4/5 border-r-solid border-r-1 border-gray-200">
-                <div className="flex flex-col items-center justify-start p-4 h-screen text-black">
-                    <h1 className="text-2xl text-center font-semibold max-w-2xl">
-                        RE-ORIENTATION TRAINING AND SEMINAR WORKSHOP FOR OPERATION AND MAINTENANCE PERSONNEL AND STAFF
-                    </h1>
-                    <div className="w-full">
-                        <p className="pt-8 text-gray-500">Currently Attending: </p>
+        <div className="bg-gradient-to-br from-blue-900 via-indigo-800 to-violet-600 min-h-screen p-4 overflow-hidden">
+
+            <div className="flex flex-col items-center justify-start text-black h-full">
+                <h1 className="text-2xl text-center font-semibold max-w-4xl font-bold text-white drop-shadow-lg">
+                    RE-ORIENTATION TRAINING AND SEMINAR WORKSHOP FOR OPERATION AND MAINTENANCE PERSONNEL AND STAFF
+                </h1>
+                <div className="flex w-full gap-6 mt-4 flex-1">
+                    <div className="basis-4/5 border-solid border-1 border-gray-200 rounded-lg p-6 bg-white drop-shadow-lg min-h-full overflow-hidden flex-1">
+                        <div className="w-full">
+                            <p className="text-gray-500">Currently Attending: </p>
+                        </div>
+                        <div className="w-full h-[380px] overflow-auto scrollbar scrollbar-w-1 scrollbar-thumb-violet-500 scrollbar-track-gray-800 ">
+                            <ul className="flex flex-col gap-1 justify-around mt-4 text-left  ">
+                                {data && data.map((item) => {
+                                    const loggedInTime = new Date(item.timestamp).toLocaleTimeString('en-US', {
+                                        timeZone: 'Asia/Manila',
+                                        hour12: true, // 24-hour format
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        // second: '2-digit'
+                                    }).replace(/ [AP]M$/, '')
+                                    return (
+                                        <li className="text-center " key={item.name}> <div className="flex  gap-4 pb-2 justify-between border-solid border-b-1 border-gray-200  "><span> {item.name}</span>   <span> {item.designation} </span>   <span> {loggedInTime} </span>   </div></li>
+                                    )
+                                })}
+                            </ul>
+                        </div>
                     </div>
-                    <div className="w-full">
-                        <ul className="flex gap-1 justify-around flex-wrap mt-4 text-left">
-                            {data && data.map((item) => {
-                                return (
-                                    <li className="text-center" key={item.name}>{item.name}</li>
-                                )
-                            })}
-                        </ul>
+                    <div>
+                        <div className="flex flex-col items-center justify-center  text-center border-solid border-1 border-gray-200  rounded-lg p-6 bg-white drop-shadow-lg">
+                            {fetcher.data?.error && (
+                                <p className="mt-4 text-red-500">{'Sorry, can you try again?'}</p>
+                            )}
+                            {fetcher.data?.isLogin === false ? (
+                                <p className="mt-4 text-green-700 text-xl font-semibold">
+                                    Welcome <span className="text-2xl text-black">{fetcher.data.name}</span>! We are glad for you to be here!
+                                </p>
+                            ) : null}
+                            {fetcher.data?.isLogin && (
+                                <p className="mt-4 text-green-700 text-xl font-semibold">Hi{` `}
+                                    <span className="text-2xl text-black">{fetcher.data.name}</span>!  You are already logged in.Thank You!
+                                </p>
+                            )}
+                            <h1 className="text-xl mb-2 mt-4 text-gray-500 font-medium px-4">
+                                Please scan your QR code for your attendance
+                            </h1>
+                            {hasWebcam === null && <p>Checking for webcam...</p>}
+                            {fetcher.state !== 'idle' && <Spinner size='3' />}
+                            <video ref={videoRef} className="mb-4 w-full max-w-xs" />
+                            <canvas ref={canvasRef} className="hidden" />
+
+                            {hasWebcam === false && (
+                                <div className="mb-4">
+                                    <p>No webcam detected. Please upload a QR code image.</p>
+                                    <fetcher.Form method="post" name="scannedFile" action="/scan">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            ref={fileInputRef}
+                                            onChange={handleFileUpload}
+                                            className="mt-2 p-2 border rounded"
+                                            name="scannedQr"
+                                        />
+                                    </fetcher.Form>
+                                </div>
+                            )}
+                            {/* <Form id="qrForm" method="post" action="/scan">
+          <input type="hidden" name="data" />
+        </Form> */}
+                            {/* {scannedData && (
+          <p className="mt-4 text-gray-600">Scanned QR Code Data: {scannedData}</p>
+        )} */}
+                            {/* {error && <p className="mt-4 text-red-500">{error}</p>} */}
+
+                        </div>
                     </div>
                 </div>
 
             </div>
-            <div className="flex flex-col items-center justify-center h-screen text-center">
-                {fetcher.data?.error && (
-                    <p className="mt-4 text-red-500">{'Sorry, can you try again?'}</p>
-                )}
-                {fetcher.data?.isLogin === false ? (
-                    <p className="mt-4 text-green-700 text-xl font-semibold">
-                        Welcome <span className="text-2xl text-black">{fetcher.data.name}</span>! We are glad for you to be here!
-                    </p>
-                ) : null}
-                {fetcher.data?.isLogin && (
-                    <p className="mt-4 text-green-700 text-xl font-semibold">Hi{` `}
-                        <span className="text-2xl text-black">{fetcher.data.name}</span>!  You are already logged in.Thank You!
-                    </p>
-                )}
-                <h1 className="text-lg mb-4 mt-8 text-gray-500 font-medium">
-                    Please scan QR code for your attendance
-                </h1>
-                {hasWebcam === null && <p>Checking for webcam...</p>}
-                {fetcher.state !== 'idle' && <Spinner size='3' />}
-                <video ref={videoRef} className="mb-4 w-full max-w-xs" />
-                <canvas ref={canvasRef} className="hidden" />
 
-                {hasWebcam === false && (
-                    <div className="mb-4">
-                        <p>No webcam detected. Please upload a QR code image.</p>
-                        <fetcher.Form method="post" name="scannedFile" action="/scan">
-                            <input
-                                type="file"
-                                accept="image/*"
-                                ref={fileInputRef}
-                                onChange={handleFileUpload}
-                                className="mt-2 p-2 border rounded"
-                                name="scannedQr"
-                            />
-                        </fetcher.Form>
-                    </div>
-                )}
-                {/* <Form id="qrForm" method="post" action="/scan">
-          <input type="hidden" name="data" />
-        </Form> */}
-                {/* {scannedData && (
-          <p className="mt-4 text-gray-600">Scanned QR Code Data: {scannedData}</p>
-        )} */}
-                {/* {error && <p className="mt-4 text-red-500">{error}</p>} */}
 
-            </div>
         </div>
 
 
