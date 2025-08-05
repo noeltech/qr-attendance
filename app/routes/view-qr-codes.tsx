@@ -46,8 +46,8 @@ export default function ViewQrCodes() {
                 <ul className="w-full flex flex-wrap justify-around">{
                     data.map((item) => {
                         return (
-                            <li key={item.user_id} className="flex flex-col items-center">
-                                <p>{item.name}</p>
+                            <li key={item.user_id} className="flex flex-col items-center mb-8">
+                                <p className="text-xs">{item.name}</p>
                                 <div className=" h-48">
 
                                     <img

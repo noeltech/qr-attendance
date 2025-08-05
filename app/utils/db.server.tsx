@@ -170,13 +170,13 @@ export async function findAttendance(user_id: string, event_id: string, day_numb
 }
 
 
-export async function getAllAttendance() {
+export async function getAllAttendance(timeOfDay: string) {
     const client = await pool.connect();
-    const queryText = `SELECT * FROM attendance`
+    const queryText = `SELECT * FROM attendance WHERE time_of_day = $1`
 
     try {
 
-        const result = await client.query(queryText);
+        const result = await client.query(queryText, [timeOfDay]);
         if (result.rowCount !== 0) {
             console.log(result.rows)
             return { data: result.rows, message: "success", error: null }

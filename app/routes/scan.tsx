@@ -11,8 +11,15 @@ import { Spinner } from "@radix-ui/themes";
 import { useLoaderData } from "react-router";
 
 export async function loader({ request }: LoaderFunctionArgs) {
+    const date = new Date();
+    const timeString = date.toLocaleTimeString('en-US', {
+        timeZone: 'Asia/Manila', // Convert to Manila time (UTC+8)
+        hour12: true
+    });
+    const isAM = timeString.includes('AM');
+    const timeOfDay = isAM ? "AM" : "PM"
     try {
-        const result = await getAllAttendance()
+        const result = await getAllAttendance(timeOfDay)
         const { data } = result
         if (!data) {
             return { data: null, error: "no data or is null" }
@@ -56,7 +63,14 @@ export async function action({ request }) {
 
 
     //CHECK ATTENDEE IF ALREADY LOGGEDIN OR NOT
-    const isLogin = await findAttendance(qrCodeResult.userID, qrCodeResult.event_id, 1, 'am')
+    const date = new Date();
+    const timeString = date.toLocaleTimeString('en-US', {
+        timeZone: 'Asia/Manila', // Convert to Manila time (UTC+8)
+        hour12: true
+    });
+    const isAM = timeString.includes('AM');
+
+    const isLogin = await findAttendance(qrCodeResult.userID, qrCodeResult.event_id, 1, isAM ? "AM" : "PM")
     console.log(isLogin)
     if (isLogin.result === true) {
         return { message: `Hi ${findResult.name}! You are already logged in.  Thank You!`, isLogin: true, name: findResult.name }
@@ -64,7 +78,7 @@ export async function action({ request }) {
     //LOG ATTENDANCE
     const designation = findResult?.designation || ""
     const role = findResult?.role || ""
-    const loggedInResult = await loggedIn(qrCodeResult.userID, qrCodeResult.event_id, 1, 'am', findResult.name, designation, role)
+    const loggedInResult = await loggedIn(qrCodeResult.userID, qrCodeResult.event_id, 1, isAM ? "AM" : "PM", findResult.name, designation, role)
     if (loggedInResult.error) {
         return { error: loggedInResult.error }
     }
@@ -236,13 +250,17 @@ export default function Scan() {
         <div className="bg-gradient-to-br from-blue-900 via-indigo-800 to-violet-600 min-h-screen p-4 overflow-hidden">
 
             <div className="flex flex-col items-center justify-start text-black h-full">
-                <h1 className="text-2xl text-center font-semibold max-w-4xl font-bold text-white drop-shadow-lg">
-                    RE-ORIENTATION TRAINING AND SEMINAR WORKSHOP FOR OPERATION AND MAINTENANCE PERSONNEL AND STAFF
+                <h2 className="text-xl text-center font-semibold max-w-4xl font-bold text-white drop-shadow-lg">
+                    RE-ORIENTATION TRAINING AND SEMINAR WORKSHOP </h2>
+                <h1 className="text-3xl text-center font-semibold max-w-2xl font-bold text-white drop-shadow-lg">
+                    FOR OPERATION AND MAINTENANCE PERSONNEL AND STAFF
                 </h1>
-                <div className="flex w-full gap-6 mt-4 flex-1">
+                <p className="font-bold text-white drop-shadow-lg text lg">August 6-8 2025</p>
+                <p className="font-bold text-white drop-shadow-lg text lg">Engr. Rory F. Avance (Speaker)</p>
+                <div className="flex w-full gap-6 mt-8 flex-1">
                     <div className="basis-4/5 border-solid border-1 border-gray-200 rounded-lg p-6 bg-white drop-shadow-lg min-h-full overflow-hidden flex-1">
                         <div className="w-full">
-                            <p className="text-gray-500">Currently Attending: </p>
+                            <p className="text-gray-800 font-bold">CURRENTLY ATTENDING: </p>
                         </div>
                         <div className="w-full h-[380px] overflow-auto scrollbar scrollbar-w-1 scrollbar-thumb-violet-500 scrollbar-track-gray-800 ">
                             <ul className="flex flex-col gap-1 justify-around mt-4 text-left  ">
@@ -255,7 +273,7 @@ export default function Scan() {
                                         // second: '2-digit'
                                     }).replace(/ [AP]M$/, '')
                                     return (
-                                        <li className="text-center " key={item.name}> <div className="flex  gap-4 pb-2 justify-between border-solid border-b-1 border-gray-200  "><span> {item.name}</span>   <span> {item.designation} </span>   <span> {loggedInTime} </span>   </div></li>
+                                        <li className="text-left " key={item.name}> <div className="flex  gap-4 pb-2 justify-between border-solid border-b-1 border-gray-200  "><span className="grow"> {item.name}</span>   <span className="grow"> {item.designation} </span>   <span className="grow text-right"> {loggedInTime} </span>   </div></li>
                                     )
                                 })}
                             </ul>
