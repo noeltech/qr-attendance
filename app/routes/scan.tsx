@@ -70,7 +70,7 @@ export async function action({ request }) {
     });
     const isAM = timeString.includes('AM');
 
-    const isLogin = await findAttendance(qrCodeResult.userID, qrCodeResult.event_id, 1, isAM ? "AM" : "PM")
+    const isLogin = await findAttendance(qrCodeResult.userID, qrCodeResult.event_id, 2, isAM ? "AM" : "PM")
     console.log(isLogin)
     if (isLogin.result === true) {
         return { message: `Hi ${findResult.name}! You are already logged in.  Thank You!`, isLogin: true, name: findResult.name }
