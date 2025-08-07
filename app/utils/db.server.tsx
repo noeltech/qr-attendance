@@ -172,8 +172,8 @@ export async function findAttendance(user_id: string, event_id: string, day_numb
 
 export async function getAllAttendance() {
     const client = await pool.connect();
-    const queryText = `SELECT * FROM (SELECT DISTINCT ON (user_id) * FROM attendance WHERE timestamp::date = CURRENT_DATE
-  AND EXTRACT(HOUR FROM timestamp) BETWEEN 0 AND 11 ORDER BY user_id, timestamp ASC) t ORDER BY timestamp DESC;`
+    const queryText = `SELECT * FROM (SELECT DISTINCT ON (user_id) * FROM attendance WHERE timestamp::date = CURRENT_DATE +1
+    AND EXTRACT(HOUR FROM timestamp) BETWEEN 0 AND 11 ORDER BY user_id, timestamp ASC) t ORDER BY timestamp DESC;`
 
     try {
 
