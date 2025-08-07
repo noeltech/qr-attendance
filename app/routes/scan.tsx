@@ -19,7 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const isAM = timeString.includes('AM');
     const timeOfDay = isAM ? "AM" : "PM"
     try {
-        const result = await getAllAttendance(timeOfDay)
+        const result = await getAllAttendance()
         const { data } = result
         if (!data) {
             return { data: null, error: "no data or is null" }
