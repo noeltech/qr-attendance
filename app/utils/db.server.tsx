@@ -162,7 +162,7 @@ export async function findAttendance(user_id: string, event_id: string, day_numb
 
 
     } catch (error) {
-        console.error("Database query error:", error);
+        console.error("Database query error :", error);
         return { message: "Database query error ", error: error }
     } finally {
         client.release();
