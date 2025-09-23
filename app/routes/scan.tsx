@@ -18,20 +18,28 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
     const isAM = timeString.includes('AM');
     const timeOfDay = isAM ? "AM" : "PM"
-    try {
-        const result = await getAllAttendance()
-        const { data } = result
-        if (!data) {
-            return { data: null, error: "no data or is null" }
-        }
 
-        // console.log(data)
-        return { data, error: result.error }
+
+    try {
+        const result = await getAllAttendance(timeOfDay)
+        const { data } = result
+
+        if (!data) {
+            console.log('No data from scan loader')
+            return { data: null, error: "no data or is null" }
+
+        }
+        console.log('data  sdasd')
+
+        const filteredData = data.filter((user) => user.time_of_day == timeOfDay)
+        // console.log(filteredData)
+
+        console.log(filteredData)
+        return { data: filteredData, error: result.error }
     } catch (error) {
         console.log(error)
         return { data: null, error: error }
     }
-
 }
 
 
@@ -39,7 +47,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }) {
     const formData = await request.formData();
     let qrData = formData.get("data")?.toString();
-    console.log("Scan action received QR data:", qrData); // Debug log
+    // console.log("Scan action received QR data:", qrData); // Debug log
     if (!qrData) {
         return { error: "No QR code data provided" };
     }
@@ -50,7 +58,7 @@ export async function action({ request }) {
     }
     // Validate the Qr COde
     const qrCodeResult = await validateQrCode(qrDataresult.data)
-    console.log(qrCodeResult)
+    // console.log(qrCodeResult)
 
     if (qrCodeResult.error) {
         return { error: qrCodeResult.error }
@@ -69,8 +77,8 @@ export async function action({ request }) {
         hour12: true
     });
     const isAM = timeString.includes('AM');
-
-    const isLogin = await findAttendance(qrCodeResult.userID, qrCodeResult.event_id, 3, isAM ? "AM" : "PM")
+    // const isAM = true
+    const isLogin = await findAttendance(qrCodeResult.userID, qrCodeResult.event_id, 4, isAM ? "AM" : "PM")
     console.log(isLogin)
     if (isLogin.result === true) {
         return { message: `Hi ${findResult.name}! You are already logged in.  Thank You!`, isLogin: true, name: findResult.name }
@@ -78,7 +86,7 @@ export async function action({ request }) {
     //LOG ATTENDANCE
     const designation = findResult?.designation || ""
     const role = findResult?.role || ""
-    const loggedInResult = await loggedIn(qrCodeResult.userID, qrCodeResult.event_id, 3, isAM ? "AM" : "PM", findResult.name, designation, role)
+    const loggedInResult = await loggedIn(qrCodeResult.userID, qrCodeResult.event_id, 4, isAM ? "AM" : "PM", findResult.name, designation, role)
     if (loggedInResult.error) {
         return { error: loggedInResult.error }
     }
@@ -250,13 +258,16 @@ export default function Scan() {
         <div className="bg-gradient-to-br from-blue-900 via-indigo-800 to-violet-600 min-h-screen p-4 overflow-hidden">
 
             <div className="flex flex-col items-center justify-start text-black h-full">
-                <h2 className="text-xl text-center font-semibold max-w-4xl font-bold text-white drop-shadow-lg">
-                    RE-ORIENTATION TRAINING AND SEMINAR WORKSHOP </h2>
-                <h1 className="text-3xl text-center font-semibold max-w-2xl font-bold text-white drop-shadow-lg">
-                    FOR OPERATION AND MAINTENANCE PERSONNEL AND STAFF
+                {/* <h2 className="text-xl text-center font-semibold max-w-4xl font-bold text-white drop-shadow-lg">
+                    RE-ORIENTATION TRAINING/SEMINAR WORKSHOP ON DISCHARGE CALIBRATION  </h2>
+                     <h1 className="text-3xl text-center font-semibold max-w-2xl font-bold text-white drop-shadow-lg">
+                   RE-ORIENTATION TRAINING/SEMINAR WORKSHOP ON DISCHARGE CALIBRATION 
+                </h1> */}
+                <h1 className="text-3xl text-center font-semibold max-w-6xl font-bold text-white drop-shadow-lg">
+                    RE-ORIENTATION TRAINING/SEMINAR WORKSHOP ON DISCHARGE CALIBRATION OF RIVERS AND CANALS INCLUDING ESTABLISHMENT AND FORMULATION OF DISCHARGE RATING CURVE
                 </h1>
-                <p className="font-bold text-white drop-shadow-lg text lg">August 6-8 2025</p>
-                <p className="font-bold text-white drop-shadow-lg text lg">Engr. Rory F. Avance (Speaker)</p>
+                <p className="font-bold text-white drop-shadow-lg text lg">August 25-26 2025</p>
+                <p className="font-bold text-white drop-shadow-lg text lg">Arnolfo S. Alejandro Jr. (Speaker)</p>
                 <div className="flex w-full gap-6 mt-8 flex-1">
                     <div className="basis-4/5 border-solid border-1 border-gray-200 rounded-lg p-6 bg-white drop-shadow-lg min-h-full overflow-hidden flex-1">
                         <div className="w-full">

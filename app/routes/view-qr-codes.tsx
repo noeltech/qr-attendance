@@ -7,7 +7,9 @@ import { useLoaderData } from "react-router";
 
 export async function loader({ request }: LoaderFunctionArgs) {
     try {
-        const result = await getAllQrCodes()
+        //ASSIGN an EVENT ID manually
+        let eventID = '421f4074-0784-465b-a01c-ea7d0ae26e0c'
+        const result = await getAllQrCodes(eventID)
         const { data } = result
         if (!data) {
             return { data: null, error: "no data or is null" }
@@ -48,7 +50,7 @@ export default function ViewQrCodes() {
                         return (
                             <li key={item.user_id} className="flex flex-col items-center mb-8">
                                 <p className="text-xs">{item.name}</p>
-                                <div className=" h-48">
+                                <div className=" h-64">
 
                                     <img
                                         src={item.qrCodeImage}

@@ -8,7 +8,9 @@ import { generateQrData } from "~/utils/generateQrData";
 
 
 export async function loader({ request }: LoaderFunctionArgs) {
-    const result = await getAllUsers()
+    //ASSIGN an EVENT ID manually
+    let eventID = '421f4074-0784-465b-a01c-ea7d0ae26e0c'
+    const result = await getAllUsers(eventID)
     if (result.error) {
         return { data: null, error: result.error }
     }
@@ -36,7 +38,9 @@ export default function Attendees() {
         }
         try {
             const resultWithQrData = data.map((item) => {
-                const result = generateQrData(item.user_id, '6d5ca3a9-63e3-4a71-8787-3e42e3b4e606', item.name);
+                //ASSIGN an EVENT ID manually
+                let eventID = '421f4074-0784-465b-a01c-ea7d0ae26e0c'
+                const result = generateQrData(item.user_id, eventID, item.name);
                 return result
             })
             console.log(resultWithQrData)

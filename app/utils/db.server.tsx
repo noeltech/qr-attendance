@@ -57,13 +57,14 @@ export async function findOneUser(id: string) {
         client.release();
     }
 }
+// GET ALL ATTENDEESS
+export async function getAllUsers(eventID: string) {
 
-export async function getAllUsers() {
     const client = await pool.connect();
-    const query = `SELECT user_id, name, designation FROM attendees `
+    const query = `SELECT user_id, name, designation ,event_id FROM attendees WHERE event_id = $1 `
     try {
 
-        const result = await client.query(query);
+        const result = await client.query(query, [eventID]);
         if (result.rows[0] <= 0) {
             return { error: 'No user found' }
         }
@@ -78,11 +79,11 @@ export async function getAllUsers() {
 
 }
 
-export async function getAllQrCodes() {
+export async function getAllQrCodes(eventID: string) {
     const client = await pool.connect();
-    const queryText = `SELECT user_id,event_id,token,qr_data,name FROM qr_codes`
+    const queryText = `SELECT user_id,event_id,token,qr_data,name FROM qr_codes WHERE event_id=$1`
     try {
-        const result = await client.query(queryText)
+        const result = await client.query(queryText, [eventID])
         return { data: result.rows, success: true, error: "" }
     } catch (error) {
         console.log(error)
@@ -146,6 +147,8 @@ export async function loggedIn(user_id: string, event_id: string, day_number: nu
         client.release();
     }
 }
+
+
 export async function findAttendance(user_id: string, event_id: string, day_number: number, time_of_day: string) {
     const client = await pool.connect();
     const queryText = `SELECT * FROM attendance WHERE user_id = $1 AND event_id = $2 AND day_number = $3 AND time_of_day = $4`;
@@ -170,14 +173,30 @@ export async function findAttendance(user_id: string, event_id: string, day_numb
 }
 
 
-export async function getAllAttendance() {
+export async function getAllAttendance(timePeriod: string) {
     const client = await pool.connect();
-    const queryText = `SELECT * FROM (SELECT DISTINCT ON (user_id) * FROM attendance WHERE timestamp::date = CURRENT_DATE + 1
-    AND EXTRACT(HOUR FROM timestamp) BETWEEN 0 AND 11 ORDER BY user_id, timestamp ASC) t ORDER BY timestamp DESC;`
+    // const queryText = `SELECT * FROM (SELECT DISTINCT ON (user_id) * FROM attendance WHERE timestamp::date = CURRENT_DATE 
+    // AND EXTRACT(HOUR FROM timestamp) BETWEEN 0 AND 11 ORDER BY user_id, timestamp ASC) t ORDER BY timestamp DESC;`
+
+    const queryText = `
+    SELECT * 
+    FROM (
+        SELECT DISTINCT ON (user_id) * 
+        FROM attendance 
+        WHERE timestamp::date = CURRENT_DATE
+        AND EXTRACT(HOUR FROM timestamp) BETWEEN 
+            CASE WHEN $1 = 'PM' THEN 0 ELSE 12 END 
+            AND 
+            CASE WHEN $1 = 'AM' THEN 11 ELSE 23 END 
+        ORDER BY user_id, timestamp ASC
+    ) t 
+    ORDER BY timestamp DESC;
+  `
+
 
     try {
 
-        const result = await client.query(queryText);
+        const result = await client.query(queryText, [timePeriod]);
         if (result.rowCount !== 0) {
             console.log(result.rows)
             return { data: result.rows, message: "success", error: null }
