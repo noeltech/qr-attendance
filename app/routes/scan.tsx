@@ -284,7 +284,7 @@ export default function Scan() {
                                         // second: '2-digit'
                                     }).replace(/ [AP]M$/, '')
                                     return (
-                                        <li className="text-left " key={item.name}> <div className="flex  gap-4 pb-2 justify-between border-solid border-b-1 border-gray-200  "><span className="grow"> {item.name}</span>   <span className="grow"> {item.designation} </span>   <span className="grow text-right"> {loggedInTime} </span>   </div></li>
+                                        <li className=" flex-1" key={item.name}> <div className="flex flex-row pb-2 justify-between border-solid border-b-1 border-gray-200  "><span className="flex-1 text-center"> {item.name}</span>   <span className="flex-1 text-center text-gray-400"> {item.designation} </span>   <span className="flex-1 text-center text-gray-400"> {loggedInTime} </span>   </div></li>
                                     )
                                 })}
                             </ul>
