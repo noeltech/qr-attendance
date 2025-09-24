@@ -7,6 +7,8 @@ import { validateQrData } from "~/utils/validateQrData";
 import { validateQrCode } from "~/utils/validateQrCode";
 import { findAttendance, findOneUser, getAllAttendance, loggedIn } from "~/utils/db.server";
 import { Spinner } from "@radix-ui/themes";
+import { Toast } from "radix-ui";
+
 
 import { useLoaderData } from "react-router";
 
@@ -19,17 +21,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const isAM = timeString.includes('AM');
     const timeOfDay = isAM ? "AM" : "PM"
 
-
     try {
         const result = await getAllAttendance(timeOfDay)
         const { data } = result
+        console.log(timeOfDay)
 
         if (!data) {
             console.log('No data from scan loader')
             return { data: null, error: "no data or is null" }
 
         }
-        console.log('data  sdasd')
+        console.log(timeOfDay)
 
         const filteredData = data.filter((user) => user.time_of_day == timeOfDay)
         // console.log(filteredData)
@@ -254,9 +256,7 @@ export default function Scan() {
 
     return (
 
-
         <div className="bg-gradient-to-br from-blue-900 via-indigo-800 to-violet-600 h-screen p-4 overflow-hidden ">
-
             <div className="flex flex-col items-center justify-start text-black h-full">
                 {/* <h2 className="text-xl text-center font-semibold max-w-4xl font-bold text-white drop-shadow-lg">
                     RE-ORIENTATION TRAINING/SEMINAR WORKSHOP ON DISCHARGE CALIBRATION  </h2>
@@ -274,7 +274,7 @@ export default function Scan() {
                             <p className="text-gray-800 font-bold">CURRENTLY ATTENDING: </p>
                         </div>
                         <div className="w-full h-full overflow-auto  ">
-                            <ul className="flex flex-col gap-1 justify-around mt-4 text-left h-full ">
+                            <ul className="flex flex-col gap-1  mt-4 text-left h-full ">
                                 {data && data.map((item) => {
                                     const loggedInTime = new Date(item.timestamp).toLocaleTimeString('en-US', {
                                         timeZone: 'Asia/Manila',
@@ -284,7 +284,7 @@ export default function Scan() {
                                         // second: '2-digit'
                                     }).replace(/ [AP]M$/, '')
                                     return (
-                                        <li className=" flex-1" key={item.name}> <div className="flex flex-row pb-2 justify-between border-solid border-b-1 border-gray-200  "><span className="flex-1 text-center"> {item.name}</span>   <span className="flex-1 text-center text-gray-400"> {item.designation} </span>   <span className="flex-1 text-center text-gray-400"> {loggedInTime} </span>   </div></li>
+                                        <li className="" key={item.name}> <div className="flex flex-row pb-2 justify-between border-solid border-b-1 border-gray-200  "><span className="flex-1 text-center"> {item.name}</span>   <span className="flex-1 text-center text-gray-400"> {item.designation} </span>   <span className="flex-1 text-center text-gray-400"> {loggedInTime} </span>   </div></li>
                                     )
                                 })}
                             </ul>
@@ -344,8 +344,6 @@ export default function Scan() {
 
 
         </div>
-
-
 
     );
 }

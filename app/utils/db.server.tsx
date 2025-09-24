@@ -183,11 +183,8 @@ export async function getAllAttendance(timePeriod: string) {
     FROM (
         SELECT DISTINCT ON (user_id) * 
         FROM attendance 
-        WHERE timestamp::date = CURRENT_DATE
-        AND EXTRACT(HOUR FROM timestamp) BETWEEN 
-            CASE WHEN $1 = 'AM' THEN 0 ELSE 12 END 
-            AND 
-            CASE WHEN $1 = 'PM' THEN 11 ELSE 23 END 
+        WHERE timestamp::date = CURRENT_DATE 
+        AND time_of_day = $1
         ORDER BY user_id, timestamp ASC
     ) t 
     ORDER BY timestamp DESC;
