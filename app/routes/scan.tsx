@@ -255,7 +255,7 @@ export default function Scan() {
     return (
 
 
-        <div className="bg-gradient-to-br from-blue-900 via-indigo-800 to-violet-600 min-h-screen p-4 overflow-hidden">
+        <div className="bg-gradient-to-br from-blue-900 via-indigo-800 to-violet-600 h-screen p-4 overflow-hidden ">
 
             <div className="flex flex-col items-center justify-start text-black h-full">
                 {/* <h2 className="text-xl text-center font-semibold max-w-4xl font-bold text-white drop-shadow-lg">
@@ -268,13 +268,13 @@ export default function Scan() {
                 </h1>
                 <p className="font-bold text-white drop-shadow-lg text lg">August 25-26 2025</p>
                 <p className="font-bold text-white drop-shadow-lg text lg">Engr. Arnolfo S. Alejandro Jr. (Speaker)</p>
-                <div className="flex w-full gap-6 mt-8 flex-1">
-                    <div className="basis-4/5 border-solid border-1 border-gray-200 rounded-lg p-6 bg-white drop-shadow-lg min-h-full overflow-hidden flex-1">
+                <div className="flex w-full gap-6 mt-8 flex-1 h-full overflow-hidden">
+                    <div className="basis-4/5 border-solid border-1 border-gray-200 rounded-lg p-6 bg-white drop-shadow-lg overflow-hidden flex-1">
                         <div className="w-full">
                             <p className="text-gray-800 font-bold">CURRENTLY ATTENDING: </p>
                         </div>
-                        <div className="w-full h-[380px] overflow-auto scrollbar scrollbar-w-1 scrollbar-thumb-violet-500 scrollbar-track-gray-800 ">
-                            <ul className="flex flex-col gap-1 justify-around mt-4 text-left  ">
+                        <div className="w-full h-full overflow-auto  ">
+                            <ul className="flex flex-col gap-1 justify-around mt-4 text-left h-full ">
                                 {data && data.map((item) => {
                                     const loggedInTime = new Date(item.timestamp).toLocaleTimeString('en-US', {
                                         timeZone: 'Asia/Manila',
