@@ -185,9 +185,9 @@ export async function getAllAttendance(timePeriod: string) {
         FROM attendance 
         WHERE timestamp::date = CURRENT_DATE
         AND EXTRACT(HOUR FROM timestamp) BETWEEN 
-            CASE WHEN $1 = 'PM' THEN 0 ELSE 12 END 
+            CASE WHEN $1 = 'AM' THEN 0 ELSE 12 END 
             AND 
-            CASE WHEN $1 = 'AM' THEN 11 ELSE 23 END 
+            CASE WHEN $1 = 'PM' THEN 11 ELSE 23 END 
         ORDER BY user_id, timestamp ASC
     ) t 
     ORDER BY timestamp DESC;

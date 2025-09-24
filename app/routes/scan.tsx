@@ -267,7 +267,7 @@ export default function Scan() {
                     RE-ORIENTATION TRAINING/SEMINAR WORKSHOP ON DISCHARGE CALIBRATION OF RIVERS AND CANALS INCLUDING ESTABLISHMENT AND FORMULATION OF DISCHARGE RATING CURVE
                 </h1>
                 <p className="font-bold text-white drop-shadow-lg text lg">August 25-26 2025</p>
-                <p className="font-bold text-white drop-shadow-lg text lg">Arnolfo S. Alejandro Jr. (Speaker)</p>
+                <p className="font-bold text-white drop-shadow-lg text lg">Engr. Arnolfo S. Alejandro Jr. (Speaker)</p>
                 <div className="flex w-full gap-6 mt-8 flex-1">
                     <div className="basis-4/5 border-solid border-1 border-gray-200 rounded-lg p-6 bg-white drop-shadow-lg min-h-full overflow-hidden flex-1">
                         <div className="w-full">
